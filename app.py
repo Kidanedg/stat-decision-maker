@@ -25,18 +25,18 @@ def index():
                 df = pd.read_csv(filepath)
                 columns = df.columns.tolist()
 
-                # Only render form with dropdowns, no analysis yet
-                return render_template("index.html", columns=columns, result=None)
+                # ✅ STEP 4: Re-render the page with columns loaded
+                return render_template("index.html", columns=columns, result=result)
 
             except Exception as e:
                 result = {"error": f"Error reading file: {str(e)}"}
-                return render_template("index.html", columns=[], result=result)
 
         else:
-            result = {"error": "Please upload a valid .csv file"}
-            return render_template("index.html", columns=[], result=result)
+            result = {"error": "Please upload a valid CSV file."}
 
-    return render_template("index.html", columns=[], result=None)
+    # Renders the default form when visiting the page for the first time
+    return render_template("index.html", columns=columns, result=result)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
