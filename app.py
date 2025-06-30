@@ -26,7 +26,7 @@ def index():
                 columns = df.columns.tolist()
 
                 # ✅ STEP 4: Re-render the page with columns loaded
-                return render_template("index.html", columns=columns, result=result)
+                return render_template("index.html", columns=columns, result=None)
 
             except Exception as e:
                 result = {"error": f"Error reading file: {str(e)}"}
@@ -35,7 +35,7 @@ def index():
             result = {"error": "Please upload a valid CSV file."}
 
     # Renders the default form when visiting the page for the first time
-    return render_template("index.html", columns=columns, result=result)
+    return render_template("index.html", columns=columns, result=None)
 
 
 if __name__ == "__main__":
