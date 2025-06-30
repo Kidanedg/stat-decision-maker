@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2 MB upload limit
 
 # Ensure upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -36,9 +37,9 @@ def index():
 
         else:
             print("❌ Invalid file uploaded")
+            result = {"error": "Please upload a valid CSV file."}
 
     return render_template("index.html", columns=columns, result=result)
-
 
 
 if __name__ == "__main__":
