@@ -18,17 +18,21 @@ def index():
     if request.method == "POST":
         file = request.files.get("file")
         if file and file.filename.endswith(".csv"):
+            print("✅ Received file:", file.filename)  # ← debug print here
+            
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
             file.save(filepath)
 
             try:
                 df = pd.read_csv(filepath)
                 columns = df.columns.tolist()
+                 print("✅ Columns detected:", columns)  # ← debug print here
 
                 # ✅ STEP 4: Re-render the page with columns loaded
                 return render_template("index.html", columns=columns, result=None)
 
             except Exception as e:
+                print("❌ Error reading CSV:", str(e))  # ← debug error
                 result = {"error": f"Error reading file: {str(e)}"}
 
         else:
