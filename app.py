@@ -18,28 +18,27 @@ def index():
     if request.method == "POST":
         file = request.files.get("file")
         if file and file.filename.endswith(".csv"):
-            print("✅ Received file:", file.filename)  # ← debug print here
-            
+            print("✅ Received file:", file.filename)
+
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
             file.save(filepath)
 
             try:
                 df = pd.read_csv(filepath)
                 columns = df.columns.tolist()
-                 print("✅ Columns detected:", columns)  # ← debug print here
+                print("✅ Columns detected:", columns)
 
-                # ✅ STEP 4: Re-render the page with columns loaded
-                return render_template("index.html", columns=columns, result=None)
+                return render_template("index.html", columns=columns, result=result)
 
             except Exception as e:
-                print("❌ Error reading CSV:", str(e))  # ← debug error
-                result = {"error": f"Error reading file: {str(e)}"}
+                print("❌ Error reading CSV:", str(e))
+                result = {"error": f"Error reading CSV: {str(e)}"}
 
         else:
-            result = {"error": "Please upload a valid CSV file."}
+            print("❌ Invalid file uploaded")
 
-    # Renders the default form when visiting the page for the first time
-    return render_template("index.html", columns=columns, result=None)
+    return render_template("index.html", columns=columns, result=result)
+
 
 
 if __name__ == "__main__":
