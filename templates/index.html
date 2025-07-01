@@ -47,9 +47,15 @@
             <p style="color:red;">❌ {{ result.error }}</p>
         {% else %}
             <p><strong>{{ result.test }}</strong></p>
-            {% if result.statistic %}<p>Statistic: {{ result.statistic }}</p>{% endif %}
-            {% if result.p_value %}<p>p-Value: {{ result.p_value }}</p>{% endif %}
-            {% if result.decision %}<p><strong>Decision:</strong> {{ result.decision }}</p>{% endif %}
+            {% if result.statistic is defined %}
+                <p>Statistic: {{ result.statistic }}</p>
+            {% endif %}
+            {% if result.p_value is defined %}
+                <p>p-Value: {{ result.p_value }}</p>
+            {% endif %}
+            {% if result.decision %}
+                <p><strong>Decision:</strong> {{ result.decision }}</p>
+            {% endif %}
 
             {% if result.plot %}
                 <h4>Plot:</h4>
