@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>📊 Analysis Result</h2>
+  <h2>Analysis Results</h2>
 
-{% if result %}
-  {% if result.error %}
-    <p style="color:red;">{{ result.error }}</p>
+  {% if result %}
+    {% if result.error %}
+      <div class="alert alert-danger">{{ result.error }}</div>
+    {% else %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h4>{{ result.test }}</h4>
+          {% if result.statistic %}<p><strong>Statistic:</strong> {{ result.statistic }}</p>{% endif %}
+          {% if result.p_value %}<p><strong>p-Value:</strong> {{ result.p_value }}</p>{% endif %}
+          {% if result.decision %}<p><strong>Decision:</strong> {{ result.decision }}</p>{% endif %}
+        </div>
+      </div>
+
+      {% if result.plot %}
+        <img src="{{ url_for('static', filename=result.plot) }}" class="img-fluid" alt="Plot">
+      {% endif %}
+    {% endif %}
   {% else %}
-    <p><strong>{{ result.test }}</strong></p>
-    {% if result.statistic is defined %}
-      <p>Statistic: {{ result.statistic }}</p>
-      <p>p-value: {{ result.p_value }}</p>
-      <p>Decision: <strong>{{ result.decision }}</strong></p>
-    {% endif %}
-    <p>{{ result.interpretation }}</p>
-    {% if result.plot %}
-      <img src="{{ url_for('static', filename=result.plot) }}" width="600">
-    {% endif %}
-    <br><br>
-    <a href="{{ url_for('download_pdf') }}"><button>📥 Download PDF Report</button></a>
+    <p>No results yet. Run an analysis from the <a href="{{ url_for('methods') }}">methods page</a>.</p>
   {% endif %}
-{% else %}
-  <p>No results yet. Please upload data or enter manually and run analysis.</p>
-{% endif %}
 {% endblock %}
