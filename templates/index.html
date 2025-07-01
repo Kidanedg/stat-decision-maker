@@ -4,98 +4,49 @@
     <meta charset="UTF-8">
     <title>Statistical Decision Maker</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { display: flex; gap: 40px; }
+        .column { flex: 1; }
+        select, input[type="file"], input[type="submit"] {
+            width: 100%; padding: 6px; margin-top: 10px;
         }
-        .container {
-            display: flex;
-            gap: 40px;
-        }
-        .column {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        label {
-            font-weight: bold;
-        }
-        select, input[type="file"], input[type="text"] {
-            width: 100%;
-            padding: 5px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }
-        .tooltip {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 10px;
-        }
-        .result {
-            background: #f9f9f9;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .error {
-            color: red;
-        }
-        hr {
-            margin: 20px 0;
-        }
+        h2, h3, h4 { margin-bottom: 5px; }
+        .file-list { margin-top: 20px; }
+        .file-list li { margin-bottom: 5px; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <h1>📊 Statistical Decision Maker</h1>
-    <div class="container">
-        <div class="column">
-            <form method="POST" enctype="multipart/form-data">
 
-                <label for="file">Upload CSV File:</label>
-                <div class="tooltip">Upload a .csv file with columns for analysis.</div>
-                <input type="file" name="file">
+    <h2>📊 Statistical Decision Maker</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="container">
 
-                <hr>
-
-                <label>🔢 Manual Data Entry:</label>
-                <div class="tooltip">Enter numeric data if no CSV is uploaded.</div>
-                <input type="text" name="val1[]" placeholder="Var1: 1, 2, 3, ..." />
-                <input type="text" name="val2[]" placeholder="Var2: 4, 5, 6, ..." />
-
-                <hr>
+            <!-- 📁 Upload and Method -->
+            <div class="column">
+                <h3>Upload CSV File(s):</h3>
+                <input type="file" name="file" multiple required>
 
                 {% if columns %}
-                    <label for="method">Choose Analysis Method:</label>
-                    <div class="tooltip">
-                        Select one of the supported methods:<br>
-                        - t-test: Compare two groups<br>
-                        - ANOVA: Compare more than two groups<br>
-                        - Regression: Predict Y from X<br>
-                        - Correlation: Measure linear relationship<br>
-                        - Chi-square: Test categorical association<br>
-                        - Time Series: Plot a sequence of values
-                    </div>
+                    <h3>Choose Analysis Method:</h3>
                     <select name="method" required>
                         <option value="">-- Select Method --</option>
-                        <option value="t-test">Two-Sample t-Test</option>
-                        <option value="anova">ANOVA</option>
-                        <option value="regression">Linear Regression</option>
-                        <option value="correlation">Correlation</option>
-                        <option value="chi-square">Chi-Square Test</option>
-                        <option value="timeseries">Time Series Plot</option>
+                        <option value="t-test" title="Compare means of two groups">Two-Sample t-Test</option>
+                        <option value="anova" title="Compare means of 3+ groups">ANOVA</option>
+                        <option value="regression" title="Predict one variable from another">Linear Regression</option>
+                        <option value="correlation" title="Measure linear relationship">Correlation</option>
+                        <option value="chi-square" title="Check association between categories">Chi-Square</option>
+                        <option value="timeseries" title="Visualize a time series column">Time Series</option>
                     </select>
 
-                    <label for="col1">Select Column 1:</label>
-                    <div class="tooltip">This could be a grouping variable or numeric variable.</div>
+                    <h3>Select Column 1:</h3>
                     <select name="col1" required>
                         {% for col in columns %}
                             <option value="{{ col }}">{{ col }}</option>
                         {% endfor %}
                     </select>
 
-                    <label for="col2">Select Column 2 (optional):</label>
-                    <div class="tooltip">For tests needing two columns (e.g., regression, correlation).</div>
+                    <h3>Select Column 2 (if needed):</h3>
                     <select name="col2">
                         <option value="">-- None --</option>
                         {% for col in columns %}
@@ -104,16 +55,16 @@
                     </select>
                 {% endif %}
 
-                <input type="submit" value="Submit">
-            </form>
-        </div>
+                <br><br>
+                <input type="submit" value="🔍 Analyze">
+            </div>
 
-        <div class="column">
-            <h3>📈 Analysis Result:</h3>
-            {% if result %}
-                <div class="result">
+            <!-- 📈 Results -->
+            <div class="column">
+                {% if result %}
+                    <h3>🔎 Analysis Result</h3>
                     {% if result.error %}
-                        <p class="error">{{ result.error }}</p>
+                        <p class="error">❌ {{ result.error }}</p>
                     {% else %}
                         <p><strong>{{ result.test }}</strong></p>
                         {% if result.statistic is defined %}
@@ -122,16 +73,30 @@
                             <p><strong>Decision:</strong> {{ result.decision }}</p>
                         {% endif %}
                         {% if result.plot %}
-                            <hr>
                             <h4>Plot:</h4>
-                            <img src="{{ url_for('static', filename=result.plot) }}" width="100%">
+                            <img src="{{ url_for('static', filename=result.plot) }}" width="500">
                         {% endif %}
                     {% endif %}
-                </div>
-            {% else %}
-                <p>No results yet. Please upload a CSV or enter data.</p>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
-    </div>
+
+        <!-- 📁 Uploaded File List -->
+        {% if uploaded_files %}
+            <div class="file-list">
+                <h4>📂 Uploaded Files</h4>
+                <ul>
+                    {% for f in uploaded_files %}
+                        <li>
+                            {{ f }}
+                            <a href="{{ url_for('download_file', filename=f) }}" target="_blank">📥 Download</a>
+                            <a href="{{ url_for('delete_file', filename=f) }}">🗑️ Delete</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </form>
+
 </body>
 </html>
