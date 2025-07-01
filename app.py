@@ -1,105 +1,169 @@
-from flask import Flask, render_template, request, session, redirect, url_for, send_file
-import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash
 import os
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.linear_model import LinearRegression
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from io import BytesIO
-import werkzeug.utils
 
 app = Flask(__name__)
-app.secret_key = 'secret'
+app.secret_key = "secret-key"
 
 UPLOAD_FOLDER = 'uploads'
 STATIC_FOLDER = 'static'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(STATIC_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def safe_save_plot(df, plot_title):
-    plt.figure()
-    df.plot(kind='line' if 'Series' in plot_title else 'hist', legend=True)
-    plt.title(plot_title)
-    fn = os.path.join(STATIC_FOLDER, "plot.png")
-    plt.savefig(fn); plt.close()
-    return "plot.png"
+# Global data store
+global_df = None
+last_result = None
 
-def run_test(df, method, col1, col2):
-    res = {'test': method, 'plot': None}
-    if method == 'wilcoxon':
-        if col1 in df.columns and col2 in df.columns:
-            stat, p = stats.wilcoxon(df[col1].dropna(), df[col2].dropna())
-            res.update(statistic=round(stat,3), p_value=round(p,4),
-                       decision='Reject H₀' if p < .05 else 'Fail to Reject H₀',
-                       interpretation=f"Wilcoxon: stat={stat:.3f}, p={p:.4f}")
-    elif method == 'kruskal':
-        groups = df[col1].dropna().unique()
-        data = [df[df[col1]==g][col2].dropna() for g in groups]
-        stat, p = stats.kruskal(*data)
-        res.update(statistic=round(stat,3), p_value=round(p,4),
-                   decision='Reject H₀' if p < .05 else 'Fail to Reject H₀',
-                   interpretation=f"Kruskal–Wallis: H={stat:.3f}, p={p:.4f}")
-    # Add prior methods...
-    return res
 
-@app.route("/", methods=["GET","POST"])
+@app.route("/")
 def home():
-    if request.method=="POST":
-        data = request.form.get('grid')
-        df = pd.read_json(data, orient='split')
-        session['data'] = df.to_json()
-        session['columns'] = df.columns.tolist()
-        return redirect(url_for('methods'))
     return render_template("home.html")
 
-@app.route("/upload", methods=["GET","POST"])
+
+@app.route("/upload", methods=["GET", "POST"])
 def upload():
-    if request.method=="POST":
-        f = request.files.get('file')
-        if f and f.filename.endswith('.csv'):
-            fn = werkzeug.utils.secure_filename(f.filename)
-            path = os.path.join(UPLOAD_FOLDER, fn)
-            f.save(path)
-            df = pd.read_csv(path)
-            session['data'] = df.to_json()
-            session['columns'] = df.columns.tolist()
-            return redirect(url_for('methods'))
+    global global_df
+    if request.method == "POST":
+        file = request.files.get("file")
+        if file and file.filename.endswith(".csv"):
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+            file.save(filepath)
+            try:
+                global_df = pd.read_csv(filepath)
+                flash("✅ File uploaded and loaded successfully.", "info")
+                return redirect(url_for("methods"))
+            except Exception as e:
+                flash(f"❌ Error reading CSV: {str(e)}", "danger")
+        else:
+            flash("❌ Please upload a valid CSV file.", "warning")
     return render_template("upload.html")
 
-@app.route("/methods", methods=["GET","POST"])
+
+@app.route("/manual", methods=["GET", "POST"])
+def manual_entry():
+    global global_df
+    if request.method == "POST":
+        headers = request.form.getlist("headers")
+        cells = request.form.getlist("cell")
+        rows = [cells[i:i+len(headers)] for i in range(0, len(cells), len(headers))]
+        try:
+            global_df = pd.DataFrame(rows, columns=headers)
+            flash("✅ Data entered successfully.", "info")
+            return redirect(url_for("methods"))
+        except Exception as e:
+            flash(f"❌ Error creating DataFrame: {str(e)}", "danger")
+    return render_template("manual_entry.html", headers=["A", "B"], rows=[["", ""], ["", ""]])
+
+
+@app.route("/methods", methods=["GET", "POST"])
 def methods():
-    df = pd.read_json(session['data'])
-    cols = session['columns']
-    extra = ['wilcoxon','kruskal']
-    if request.method=="POST":
-        m = request.form['method']; c1=request.form['col1']; c2=request.form['col2']
-        result = run_test(df, m, c1, c2)
-        session['result'] = result
-        return redirect(url_for('results'))
-    return render_template("methods.html", columns=cols, methods=extra+['t-test','anova','regression','correlation','chi-square','timeseries'])
+    global global_df, last_result
+    columns = global_df.columns.tolist() if isinstance(global_df, pd.DataFrame) else []
+    if request.method == "POST":
+        method = request.form.get("method")
+        col1 = request.form.get("col1")
+        col2 = request.form.get("col2")
+
+        try:
+            if method == "t-test":
+                groups = global_df[col1].dropna().unique()
+                group1 = global_df[global_df[col1] == groups[0]][col2].dropna()
+                group2 = global_df[global_df[col1] == groups[1]][col2].dropna()
+                stat, p = stats.ttest_ind(group1, group2)
+                decision = "Reject H₀" if p < 0.05 else "Fail to Reject H₀"
+                last_result = {"test": "Two-Sample t-Test", "statistic": round(stat, 3), "p_value": round(p, 4), "decision": decision}
+
+            elif method == "anova":
+                groups = global_df[col1].dropna().unique()
+                data_groups = [global_df[global_df[col1] == g][col2].dropna() for g in groups]
+                stat, p = stats.f_oneway(*data_groups)
+                decision = "Reject H₀" if p < 0.05 else "Fail to Reject H₀"
+                last_result = {"test": "ANOVA", "statistic": round(stat, 3), "p_value": round(p, 4), "decision": decision}
+
+            elif method == "regression":
+                x = global_df[[col1]].dropna()
+                y = global_df[col2].dropna()
+                x, y = x.loc[y.index], y
+                model = LinearRegression().fit(x, y)
+                stat = model.coef_[0]
+                p = model.score(x, y)
+                decision = f"y = {round(model.intercept_, 2)} + {round(stat, 2)}x"
+                last_result = {"test": "Linear Regression", "statistic": round(stat, 3), "p_value": round(p, 4), "decision": decision}
+
+            elif method == "correlation":
+                x = global_df[col1].dropna()
+                y = global_df[col2].dropna()
+                x, y = x.loc[y.index], y
+                stat, p = stats.pearsonr(x, y)
+                decision = "Significant" if p < 0.05 else "Not significant"
+                last_result = {"test": "Correlation", "statistic": round(stat, 3), "p_value": round(p, 4), "decision": decision}
+
+            elif method == "chi-square":
+                table = pd.crosstab(global_df[col1], global_df[col2])
+                stat, p, _, _ = stats.chi2_contingency(table)
+                decision = "Reject H₀" if p < 0.05 else "Fail to Reject H₀"
+                last_result = {"test": "Chi-Square", "statistic": round(stat, 3), "p_value": round(p, 4), "decision": decision}
+
+            elif method == "timeseries":
+                plt.figure()
+                global_df[col1].dropna().plot(title=f"Time Series: {col1}")
+                plot_path = os.path.join(STATIC_FOLDER, "plot.png")
+                plt.savefig(plot_path)
+                last_result = {"test": "Time Series Plot", "plot": "plot.png"}
+
+            else:
+                last_result = {"error": "Invalid method selected."}
+                return redirect(url_for("results"))
+
+            return redirect(url_for("results"))
+
+        except Exception as e:
+            last_result = {"error": str(e)}
+            return redirect(url_for("results"))
+
+    return render_template("methods.html", columns=columns)
+
 
 @app.route("/results")
 def results():
-    r = session.get('result')
-    return render_template("results.html", result=r)
+    return render_template("results.html", result=last_result)
+
 
 @app.route("/download/pdf")
 def download_pdf():
-    r = session.get('result')
-    if not r: return "No result"
-    buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=letter)
-    c.drawString(100, 700, f"Test: {r['test']}")
-    if r.get('statistic') is not None:
-        c.drawString(100, 680, f"Stat: {r['statistic']}, p={r['p_value']}")
-    c.drawString(100, 660, f"Decision: {r['decision']}")
-    c.drawString(100, 640, r.get('interpretation',''))
-    c.drawImage(os.path.join(STATIC_FOLDER,r['plot']), 100, 400, width=400, height=200)
-    c.save()
-    buf.seek(0)
-    return send_file(buf, download_name="result.pdf", as_attachment=True)
+    # Placeholder
+    flash("PDF export not yet implemented.", "warning")
+    return redirect(url_for("results"))
 
-if __name__=="__main__":
+
+@app.route("/download/csv")
+def download_csv():
+    global global_df
+    if global_df is not None:
+        buf = BytesIO()
+        global_df.to_csv(buf, index=False)
+        buf.seek(0)
+        return send_file(buf, mimetype='text/csv', as_attachment=True, download_name="data.csv")
+    flash("No data to export.", "danger")
+    return redirect(url_for("results"))
+
+
+@app.route("/download/excel")
+def download_excel():
+    global global_df
+    if global_df is not None:
+        buf = BytesIO()
+        global_df.to_excel(buf, index=False)
+        buf.seek(0)
+        return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name="data.xlsx")
+    flash("No data to export.", "danger")
+    return redirect(url_for("results"))
+
+
+if __name__ == "__main__":
     app.run(debug=True)
