@@ -1,6 +1,10 @@
 flask
-gunicorn
 pandas
+numpy
 scipy
 matplotlib
 scikit-learn
+gunicorn
+reportlab
+flask-wtf
+wtforms
