@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📝 Manual Data Entry</h2>
+<p>Enter your data below (click cells to edit). Then click <strong>Save Data</strong>.</p>
+
+<div id="grid" style="height: 300px;"></div>
+<br>
+<button id="saveBtn">Save Data</button>
+
+<form id="dataForm" method="POST" style="display:none;">
+  <input type="hidden" name="grid" id="gridInput">
+</form>
+
+<script>
+  const container = document.getElementById('grid');
+  const hot = new Handsontable(container, {
+    data: Handsontable.helper.createSpreadsheetData(10, 5),
+    rowHeaders: true,
+    colHeaders: true,
+    columnSorting: true,
+    licenseKey: 'non-commercial-and-evaluation'
+  });
+
+  document.getElementById('saveBtn').onclick = function(){
+    document.getElementById('gridInput').value = JSON.stringify(hot.getData(), null, 2);
+    document.getElementById('dataForm').submit();
+  };
+</script>
+
+{% endblock %}
