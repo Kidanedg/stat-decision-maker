@@ -1,66 +1,70 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.linear_model import LinearRegression
+import logging
+from werkzeug.utils import secure_filename
+import uuid
 
 app = Flask(__name__)
 
+# Configuration
 UPLOAD_FOLDER = 'uploads'
 STATIC_FOLDER = 'static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # Max 2MB
 
-# Ensure folders exist
+# Setup folders
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(STATIC_FOLDER, exist_ok=True)
+
+# Logging
+logging.basicConfig(level=logging.INFO)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     columns = []
     result = None
+    uploaded_files = []
+
+    # Show existing files
+    uploaded_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith(".csv")]
 
     if request.method == "POST":
-        file = request.files.get("file")
+        files = request.files.getlist("file")
         method = request.form.get("method")
         col1 = request.form.get("col1")
         col2 = request.form.get("col2")
-        val1 = request.form.getlist("val1[]")
-        val2 = request.form.getlist("val2[]")
 
+        # Process first valid uploaded file
         df = None
+        for file in files:
+            if file and file.filename.endswith(".csv"):
+                safe_name = secure_filename(file.filename)
+                unique_name = f"{uuid.uuid4()}_{safe_name}"
+                filepath = os.path.join(UPLOAD_FOLDER, unique_name)
+                file.save(filepath)
+                logging.info(f"✅ Uploaded: {filepath}")
 
-        if file and file.filename.endswith(".csv"):
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-            file.save(filepath)
+                try:
+                    df = pd.read_csv(filepath)
+                    columns = df.columns.tolist()
+                    break  # use the first valid CSV
+                except Exception as e:
+                    result = {"error": f"Error reading CSV: {str(e)}"}
+                    return render_template("index.html", columns=[], result=result, uploaded_files=uploaded_files)
+
+        if df is not None and method and col1:
             try:
-                df = pd.read_csv(filepath)
-            except Exception as e:
-                result = {"error": f"❌ Error reading CSV: {str(e)}"}
-                return render_template("index.html", columns=[], result=result)
+                if col1 not in df.columns:
+                    raise ValueError("Column 1 not found.")
 
-        elif val1 and val2 and any(val1) and any(val2):
-            try:
-                x = pd.to_numeric(val1, errors='coerce')
-                y = pd.to_numeric(val2, errors='coerce')
-                df = pd.DataFrame({"Var1": x, "Var2": y}).dropna()
-                col1, col2 = "Var1", "Var2"
-            except Exception as e:
-                result = {"error": f"❌ Error processing manual entry: {str(e)}"}
-                return render_template("index.html", columns=[], result=result)
-        else:
-            result = {"error": "❌ Please upload a valid CSV or enter data manually."}
-            return render_template("index.html", columns=[], result=result)
-
-        columns = df.columns.tolist()
-
-        if method and col1 in df.columns:
-            try:
                 if method == "t-test" and col2 in df.columns:
                     groups = df[col1].dropna().unique()
                     if len(groups) < 2:
-                        raise ValueError("Need at least 2 groups for t-test")
+                        raise ValueError("t-test needs 2 groups.")
                     g1 = df[df[col1] == groups[0]][col2].dropna()
                     g2 = df[df[col1] == groups[1]][col2].dropna()
                     t_stat, p_val = stats.ttest_ind(g1, g2)
@@ -69,8 +73,8 @@ def index():
 
                 elif method == "anova" and col2 in df.columns:
                     groups = df[col1].dropna().unique()
-                    data_groups = [df[df[col1] == g][col2].dropna() for g in groups]
-                    t_stat, p_val = stats.f_oneway(*data_groups)
+                    data = [df[df[col1] == g][col2].dropna() for g in groups]
+                    t_stat, p_val = stats.f_oneway(*data)
                     decision = "Reject H₀" if p_val < 0.05 else "Fail to Reject H₀"
                     plot_title = f"ANOVA: {col2} by {col1}"
 
@@ -82,7 +86,7 @@ def index():
                     t_stat = model.coef_[0]
                     p_val = model.score(x, y)
                     decision = f"y = {round(model.intercept_, 2)} + {round(t_stat, 2)}x"
-                    plot_title = f"Regression: {col2} vs {col1}"
+                    plot_title = f"Linear Regression: {col2} vs {col1}"
 
                 elif method == "correlation" and col2 in df.columns:
                     x = df[col1].dropna()
@@ -102,33 +106,33 @@ def index():
                     series = df[col1].dropna()
                     plt.figure(figsize=(6, 4))
                     plt.plot(series, marker='o')
-                    plt.title(f"Time Series: {col1}")
+                    plt.title(f"Time Series Plot: {col1}")
                     plt.xlabel("Index")
                     plt.ylabel(col1)
                     plot_path = os.path.join(STATIC_FOLDER, "plot.png")
                     plt.savefig(plot_path)
                     plt.close()
-                    result = {"test": "Time Series", "plot": "plot.png"}
-                    return render_template("index.html", columns=columns, result=result)
+                    result = {
+                        "test": "Time Series Plot",
+                        "plot": "plot.png"
+                    }
+                    return render_template("index.html", columns=columns, result=result, uploaded_files=uploaded_files)
 
                 else:
-                    result = {"error": "❌ Invalid method or column selection."}
-                    return render_template("index.html", columns=columns, result=result)
+                    raise ValueError("Please select valid method and columns.")
 
-                # Plot (all but time series)
+                # Create histogram or scatter plot
                 plt.figure(figsize=(6, 4))
                 if method == "regression":
                     plt.scatter(df[col1], df[col2], alpha=0.7)
                     line = df[col1].sort_values()
-                    pred = LinearRegression().fit(df[[col1]], df[col2]).predict(line.to_frame())
-                    plt.plot(line, pred, color="red")
+                    plt.plot(line, model.predict(line.to_frame()), color='red')
                 elif method == "correlation":
                     plt.scatter(df[col1], df[col2], alpha=0.7)
                 else:
                     for group in df[col1].dropna().unique():
                         plt.hist(df[df[col1] == group][col2].dropna(), alpha=0.5, label=str(group))
                     plt.legend()
-
                 plt.title(plot_title)
                 plt.xlabel(col1)
                 plt.ylabel(col2)
@@ -145,11 +149,27 @@ def index():
                 }
 
             except Exception as e:
-                result = {"error": f"❌ Analysis error: {str(e)}"}
+                result = {"error": str(e)}
         else:
-            result = {"error": "❌ Please select valid method and columns."}
+            result = {"error": "Missing method or column selection."}
 
-    return render_template("index.html", columns=columns, result=result)
+    return render_template("index.html", columns=columns, result=result, uploaded_files=uploaded_files)
+
+
+@app.route("/uploads/<filename>")
+def download_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+@app.route("/delete/<filename>")
+def delete_file(filename):
+    path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    try:
+        os.remove(path)
+        logging.info(f"🗑️ Deleted file: {filename}")
+    except Exception as e:
+        logging.error(f"Failed to delete {filename}: {str(e)}")
+    return render_template("index.html", result=None, columns=[], uploaded_files=os.listdir(UPLOAD_FOLDER))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
