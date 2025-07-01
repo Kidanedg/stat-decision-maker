@@ -17,29 +17,45 @@ def index():
     result = None
 
     if request.method == "POST":
-        file = request.files.get("file")
-        if file and file.filename.endswith(".csv"):
-            print("✅ Received file:", file.filename)
+    file = request.files.get("file")
+    method = request.form.get("method")
+    col1 = request.form.get("col1")
+    col2 = request.form.get("col2")
 
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-            file.save(filepath)
+    if file and file.filename.endswith(".csv"):
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        file.save(filepath)
 
-            try:
-                df = pd.read_csv(filepath)
-                columns = df.columns.tolist()
-                print("✅ Columns detected:", columns)
+        try:
+            df = pd.read_csv(filepath)
+            columns = df.columns.tolist()
+            print("✅ Columns detected:", columns)
 
-                return render_template("index.html", columns=columns, result=result)
+            # Initialize result
+            result = None
 
-            except Exception as e:
-                print("❌ Error reading CSV:", str(e))
-                result = {"error": f"Error reading CSV: {str(e)}"}
+            # If method and columns are selected, perform analysis
+            if method == "t-test" and col1 and col2 and col1 in df.columns and col2 in df.columns:
+                from scipy import stats
+                try:
+                    group1 = df[df[col1] == df[col1].unique()[0]][col2]
+                    group2 = df[df[col1] == df[col1].unique()[1]][col2]
+                    t_stat, p_val = stats.ttest_ind(group1, group2)
+                    result = {
+                        "method": "Two-Sample t-Test",
+                        "t_stat": round(t_stat, 3),
+                        "p_val": round(p_val, 4)
+                    }
+                except Exception as e:
+                    result = {"error": f"t-Test failed: {str(e)}"}
 
-        else:
-            print("❌ Invalid file uploaded")
-            result = {"error": "Please upload a valid CSV file."}
+            return render_template("index.html", columns=columns, result=result)
 
-    return render_template("index.html", columns=columns, result=result)
+        except Exception as e:
+            result = {"error": f"Error reading CSV: {str(e)}"}
+
+    return render_template("index.html", columns=[], result=result)
+
 
 
 if __name__ == "__main__":
