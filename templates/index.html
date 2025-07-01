@@ -12,7 +12,7 @@
         <form method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="file" class="form-label">Upload CSV:</label>
-                <input type="file" name="file" class="form-control" required>
+                <input type="file" name="file" accept=".csv" class="form-control" required>
             </div>
 
             {% if columns %}
@@ -20,12 +20,12 @@
                 <label for="method" class="form-label">Choose Analysis Method:</label>
                 <select name="method" class="form-select" required>
                     <option value="">-- Select Method --</option>
-                    <option value="t-test">Two-Sample t-Test</option>
-                    <option value="anova">ANOVA</option>
-                    <option value="regression">Linear Regression</option>
-                    <option value="correlation">Correlation</option>
-                    <option value="chi-square">Chi-Square Test</option>
-                    <option value="timeseries">Time Series Plot</option>
+                    <option value="t-test" title="Compare means of two groups">Two-Sample t-Test</option>
+                    <option value="anova" title="Compare means across multiple groups">ANOVA</option>
+                    <option value="regression" title="Model relationship between two numeric variables">Linear Regression</option>
+                    <option value="correlation" title="Check linear relationship between two numeric variables">Correlation</option>
+                    <option value="chi-square" title="Test independence between two categorical variables">Chi-Square Test</option>
+                    <option value="timeseries" title="Plot values across time or order">Time Series Plot</option>
                 </select>
             </div>
 
@@ -68,6 +68,10 @@
             {% if result.plot %}
                 <h5>Plot:</h5>
                 <img src="{{ url_for('static', filename=result.plot) }}" class="img-fluid" width="500">
+            {% endif %}
+
+            {% if result.csv %}
+                <p><a href="{{ url_for('static', filename=result.csv) }}" class="btn btn-sm btn-outline-success">⬇ Download CSV Result</a></p>
             {% endif %}
         {% endif %}
         {% endif %}
