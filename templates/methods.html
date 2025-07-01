@@ -1,39 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>🧪 Select Statistical Method</h2>
-<form method="POST">
-  <label>Method:</label><br>
-  <select name="method" required>
-    <option value="">-- Choose --</option>
-    <option value="t-test">t-Test</option>
-    <option value="anova">ANOVA</option>
-    <option value="regression">Regression</option>
-    <option value="correlation">Correlation</option>
-    <option value="chi-square">Chi-Square</option>
-    <option value="wilcoxon">Wilcoxon Signed-Rank</option>
-    <option value="kruskal">Kruskal–Wallis</option>
-    <option value="timeseries">Time Series</option>
-  </select><br><br>
+  <h2>Select Statistical Method</h2>
+  <p class="text-muted">Choose an analysis method to apply on the dataset.</p>
 
-  <label>Column 1:</label><br>
-  <select name="col1" required>
-    {% for col in columns %}
-      <option>{{ col }}</option>
-    {% endfor %}
-  </select><br><br>
-
-  <label>Column 2 (if needed):</label><br>
-  <select name="col2">
-    <option value="">-- None --</option>
-    {% for col in columns %}
-      <option>{{ col }}</option>
-    {% endfor %}
-  </select><br><br>
-
-  <button type="submit">Run Analysis</button>
-</form>
-
-{% if result and result.error %}
-  <p style="color:red;">{{ result.error }}</p>
-{% endif %}
+  <form method="POST">
+    <div class="mb-3">
+      <label for="method" class="form-label">Analysis Method:</label>
+      <select class="form-select" name="method" required>
+        <option value="">-- Select Method --</option>
+        <option value="t-test">Two-Sample t-Test</option>
+        <option value="anova">ANOVA</option>
+        <option value="regression">Linear Regression</option>
+        <option value="correlation">Correlation</option>
+        <option value="chi-square">Chi-Square Test</option>
+        <option value="timeseries">Time Series Plot</option>
+        <option value="kruskal">Kruskal-Wallis Test</option>
+        <option value="wilcoxon">Wilcoxon Signed-Rank Test</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="col1" class="form-label">Select Column 1:</label>
+      <select class="form-select" name="col1" required>
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="col2" class="form-label">Select Column 2 (if needed):</label>
+      <select class="form-select" name="col2">
+        <option value="">-- None --</option>
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">Run Analysis</button>
+  </form>
 {% endblock %}
