@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title or "Statistical App" }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; }
+    nav { background:#333; padding:10px; }
+    nav a { color:white; margin-right:20px; text-decoration:none; }
+    nav a:hover { text-decoration:underline; }
+    .container { padding:20px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('home') }}">🏠 Home</a>
+    <a href="{{ url_for('upload') }}">📂 File</a>
+    <a href="{{ url_for('methods') }}">🧪 Methods</a>
+    <a href="{{ url_for('results') }}">📊 Results</a>
+  </nav>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
