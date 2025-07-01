@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3>Time Series Plot</h3>
+<form method="post" enctype="multipart/form-data">
+  <input type="file" name="file" required><br><br>
+  Column Name: <input type="text" name="column" required><br>
+  <button type="submit" class="btn btn-dark mt-2">Plot</button>
+</form>
+
+{% if plot_file %}
+<hr>
+<h4>Plot:</h4>
+<img src="{{ url_for('static', filename=plot_file) }}" width="600">
+{% elif error %}
+<p style="color:red;">❌ {{ error }}</p>
+{% endif %}
+{% endblock %}
