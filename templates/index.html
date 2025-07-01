@@ -1,77 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Statistical Decision Maker</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        form { margin-bottom: 30px; }
-        select, input[type="file"], button {
-            padding: 5px; margin: 10px 0; width: 300px;
-        }
-        img { max-width: 600px; margin-top: 20px; }
-        .result { background: #f9f9f9; padding: 20px; border: 1px solid #ccc; }
-    </style>
 </head>
 <body>
-    <h2>📊 Statistical Decision Maker</h2>
-
+    <h2>Upload CSV:</h2>
     <form method="POST" enctype="multipart/form-data">
-        <label>Upload CSV:</label><br>
-        <input type="file" name="file" required><br>
+        <input type="file" name="file" required><br><br>
 
         {% if columns %}
-            <label>Choose Analysis Method:</label><br>
+            <label for="method">Choose Analysis Method:</label><br>
             <select name="method" required>
-                <option value="t_test">Two-Sample t-Test</option>
-                <option value="anova">One-way ANOVA</option>
-                <option value="histogram">Histogram</option>
-                <option value="timeseries">Time Series</option>
-                <option value="regression">Simple Linear Regression</option>
-            </select><br>
+                <option value="">-- Select Method --</option>
+                <option value="t-test">Two-Sample t-Test</option>
+            </select><br><br>
 
-            <label>Select Column 1:</label><br>
+            <label for="col1">Select Column 1:</label><br>
             <select name="col1" required>
                 {% for col in columns %}
                     <option value="{{ col }}">{{ col }}</option>
                 {% endfor %}
-            </select><br>
+            </select><br><br>
 
-            <label>Select Column 2 (optional):</label><br>
+            <label for="col2">Select Column 2 (optional):</label><br>
             <select name="col2">
                 <option value="">-- None --</option>
                 {% for col in columns %}
                     <option value="{{ col }}">{{ col }}</option>
                 {% endfor %}
-            </select><br>
+            </select><br><br>
         {% endif %}
 
-        <button type="submit">Submit</button>
+        <input type="submit" value="Submit">
     </form>
 
     {% if result %}
-        <div class="result">
-            <h3>Results:</h3>
-            {% if result.error %}
-                <p style="color: red;">❌ Error: {{ result.error }}</p>
-            {% else %}
-                {% if result.test %}
-                    <p><strong>Test:</strong> {{ result.test }}</p>
-                {% endif %}
-                {% if result.statistic %}
-                    <p><strong>Statistic:</strong> {{ result.statistic }}</p>
-                {% endif %}
-                {% if result.p_value %}
-                    <p><strong>p-value:</strong> {{ result.p_value }}</p>
-                {% endif %}
-                {% if result.decision %}
-                    <p><strong>Decision:</strong> {{ result.decision }}</p>
-                {% endif %}
-                {% if result.plot %}
-                    <p><strong>Plot:</strong></p>
-                    <img src="/static/plots/{{ result.plot }}">
-                {% endif %}
+        <hr>
+        <h3>Analysis Result:</h3>
+        {% if result.error %}
+            <p style="color:red;">❌ {{ result.error }}</p>
+        {% else %}
+            <p><strong>{{ result.test }}</strong></p>
+            <p>Statistic: {{ result.statistic }}</p>
+            <p>p-Value: {{ result.p_value }}</p>
+            <p><strong>Decision:</strong> {{ result.decision }}</p>
+
+            {% if result.plot %}
+                <h4>Histogram:</h4>
+                <img src="{{ url_for('static', filename=result.plot) }}" width="500">
             {% endif %}
-        </div>
+        {% endif %}
     {% endif %}
 </body>
 </html>
