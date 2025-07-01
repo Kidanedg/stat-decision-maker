@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Analysis Result</h2>
+
+{% if result %}
+  {% if result.error %}
+    <p style="color:red;">{{ result.error }}</p>
+  {% else %}
+    <p><strong>{{ result.test }}</strong></p>
+    {% if result.statistic is defined %}
+      <p>Statistic: {{ result.statistic }}</p>
+      <p>p-value: {{ result.p_value }}</p>
+      <p>Decision: <strong>{{ result.decision }}</strong></p>
+    {% endif %}
+    <p>{{ result.interpretation }}</p>
+    {% if result.plot %}
+      <img src="{{ url_for('static', filename=result.plot) }}" width="600">
+    {% endif %}
+    <br><br>
+    <a href="{{ url_for('download_pdf') }}"><button>📥 Download PDF Report</button></a>
+  {% endif %}
+{% else %}
+  <p>No results yet. Please upload data or enter manually and run analysis.</p>
+{% endif %}
+{% endblock %}
