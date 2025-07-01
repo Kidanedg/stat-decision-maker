@@ -3,78 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <title>Statistical Decision Maker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+        }
+        .column {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        label {
+            font-weight: bold;
+        }
+        select, input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        .tooltip {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .result {
+            background: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+        }
+        hr {
+            margin: 20px 0;
+        }
+    </style>
 </head>
-<body class="p-4">
+<body>
+    <h1>📊 Statistical Decision Maker</h1>
     <div class="container">
-        <h1 class="mb-4">Statistical Decision Maker</h1>
+        <div class="column">
+            <form method="POST" enctype="multipart/form-data">
 
-        <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="file" class="form-label">Upload CSV:</label>
-                <input type="file" name="file" accept=".csv" class="form-control" required>
-            </div>
+                <label for="file">Upload CSV File:</label>
+                <div class="tooltip">Upload a .csv file with columns for analysis.</div>
+                <input type="file" name="file">
 
-            {% if columns %}
-            <div class="mb-3">
-                <label for="method" class="form-label">Choose Analysis Method:</label>
-                <select name="method" class="form-select" required>
-                    <option value="">-- Select Method --</option>
-                    <option value="t-test" title="Compare means of two groups">Two-Sample t-Test</option>
-                    <option value="anova" title="Compare means across multiple groups">ANOVA</option>
-                    <option value="regression" title="Model relationship between two numeric variables">Linear Regression</option>
-                    <option value="correlation" title="Check linear relationship between two numeric variables">Correlation</option>
-                    <option value="chi-square" title="Test independence between two categorical variables">Chi-Square Test</option>
-                    <option value="timeseries" title="Plot values across time or order">Time Series Plot</option>
-                </select>
-            </div>
+                <hr>
 
-            <div class="mb-3">
-                <label for="col1" class="form-label">Select Column 1:</label>
-                <select name="col1" class="form-select" required>
-                    {% for col in columns %}
-                        <option value="{{ col }}">{{ col }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <label>🔢 Manual Data Entry:</label>
+                <div class="tooltip">Enter numeric data if no CSV is uploaded.</div>
+                <input type="text" name="val1[]" placeholder="Var1: 1, 2, 3, ..." />
+                <input type="text" name="val2[]" placeholder="Var2: 4, 5, 6, ..." />
 
-            <div class="mb-3">
-                <label for="col2" class="form-label">Select Column 2 (optional):</label>
-                <select name="col2" class="form-select">
-                    <option value="">-- None --</option>
-                    {% for col in columns %}
-                        <option value="{{ col }}">{{ col }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <hr>
+
+                {% if columns %}
+                    <label for="method">Choose Analysis Method:</label>
+                    <div class="tooltip">
+                        Select one of the supported methods:<br>
+                        - t-test: Compare two groups<br>
+                        - ANOVA: Compare more than two groups<br>
+                        - Regression: Predict Y from X<br>
+                        - Correlation: Measure linear relationship<br>
+                        - Chi-square: Test categorical association<br>
+                        - Time Series: Plot a sequence of values
+                    </div>
+                    <select name="method" required>
+                        <option value="">-- Select Method --</option>
+                        <option value="t-test">Two-Sample t-Test</option>
+                        <option value="anova">ANOVA</option>
+                        <option value="regression">Linear Regression</option>
+                        <option value="correlation">Correlation</option>
+                        <option value="chi-square">Chi-Square Test</option>
+                        <option value="timeseries">Time Series Plot</option>
+                    </select>
+
+                    <label for="col1">Select Column 1:</label>
+                    <div class="tooltip">This could be a grouping variable or numeric variable.</div>
+                    <select name="col1" required>
+                        {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="col2">Select Column 2 (optional):</label>
+                    <div class="tooltip">For tests needing two columns (e.g., regression, correlation).</div>
+                    <select name="col2">
+                        <option value="">-- None --</option>
+                        {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+
+        <div class="column">
+            <h3>📈 Analysis Result:</h3>
+            {% if result %}
+                <div class="result">
+                    {% if result.error %}
+                        <p class="error">{{ result.error }}</p>
+                    {% else %}
+                        <p><strong>{{ result.test }}</strong></p>
+                        {% if result.statistic is defined %}
+                            <p>Statistic: {{ result.statistic }}</p>
+                            <p>p-Value: {{ result.p_value }}</p>
+                            <p><strong>Decision:</strong> {{ result.decision }}</p>
+                        {% endif %}
+                        {% if result.plot %}
+                            <hr>
+                            <h4>Plot:</h4>
+                            <img src="{{ url_for('static', filename=result.plot) }}" width="100%">
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>No results yet. Please upload a CSV or enter data.</p>
             {% endif %}
-
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-
-        {% if result %}
-        <hr>
-        <h3>Analysis Result:</h3>
-        {% if result.error %}
-            <div class="alert alert-danger">❌ {{ result.error }}</div>
-        {% else %}
-            <p><strong>{{ result.test }}</strong></p>
-            {% if result.statistic %}
-                <p>Statistic: {{ result.statistic }}</p>
-                <p>p-Value: {{ result.p_value }}</p>
-                <p><strong>Decision:</strong> {{ result.decision }}</p>
-            {% endif %}
-
-            {% if result.plot %}
-                <h5>Plot:</h5>
-                <img src="{{ url_for('static', filename=result.plot) }}" class="img-fluid" width="500">
-            {% endif %}
-
-            {% if result.csv %}
-                <p><a href="{{ url_for('static', filename=result.csv) }}" class="btn btn-sm btn-outline-success">⬇ Download CSV Result</a></p>
-            {% endif %}
-        {% endif %}
-        {% endif %}
+        </div>
     </div>
 </body>
 </html>
