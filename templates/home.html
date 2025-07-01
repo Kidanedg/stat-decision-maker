@@ -1,31 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-
-<h2>📝 Manual Data Entry</h2>
-<p>Enter your data below (click cells to edit). Then click <strong>Save Data</strong>.</p>
-
-<div id="grid" style="height: 300px;"></div>
-<br>
-<button id="saveBtn">Save Data</button>
-
-<form id="dataForm" method="POST" style="display:none;">
-  <input type="hidden" name="grid" id="gridInput">
-</form>
-
-<script>
-  const container = document.getElementById('grid');
-  const hot = new Handsontable(container, {
-    data: Handsontable.helper.createSpreadsheetData(10, 5),
-    rowHeaders: true,
-    colHeaders: true,
-    columnSorting: true,
-    licenseKey: 'non-commercial-and-evaluation'
-  });
-
-  document.getElementById('saveBtn').onclick = function(){
-    document.getElementById('gridInput').value = JSON.stringify(hot.getData(), null, 2);
-    document.getElementById('dataForm').submit();
-  };
-</script>
-
+  <div class="text-center">
+    <h1>Welcome to the Statistical Decision Maker</h1>
+    <p class="lead">Upload your data, choose a statistical method, and view results — SPSS-style!</p>
+    <hr>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">📂 Upload CSV</a>
+    <a href="{{ url_for('manual_entry') }}" class="btn btn-secondary btn-lg">🧾 Manual Data Entry</a>
+  </div>
 {% endblock %}
