@@ -1,10 +1,6 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <div class="text-center">
-    <h1>Welcome to the Statistical Decision Maker</h1>
-    <p class="lead">Upload your data, choose a statistical method, and view results — SPSS-style!</p>
-    <hr>
-    <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">📂 Upload CSV</a>
-    <a href="{{ url_for('manual_entry') }}" class="btn btn-secondary btn-lg">🧾 Manual Data Entry</a>
-  </div>
+<h2>Welcome to the Statistical Decision Maker</h2>
+<p>This tool helps you analyze CSV datasets using standard statistical methods like t-tests, ANOVA, regression, correlation, and more.</p>
+<p>Use the menu above to upload your file and choose an analysis method.</p>
 {% endblock %}
