@@ -2,26 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ title or "Statistical App" }}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+  <title>Statistical Decision Maker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
   <style>
-    body { font-family: Arial, sans-serif; margin:0; }
-    nav { background:#333; padding:10px; }
-    nav a { color:white; margin-right:20px; text-decoration:none; }
-    nav a:hover { text-decoration:underline; }
-    .container { padding:20px; }
+    body {
+      padding-top: 60px;
+    }
+    .nav-link.active {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="{{ url_for('home') }}">🏠 Home</a>
-    <a href="{{ url_for('upload') }}">📂 File</a>
-    <a href="{{ url_for('methods') }}">🧪 Methods</a>
-    <a href="{{ url_for('results') }}">📊 Results</a>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">📊 StatApp</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if request.endpoint in ['upload', 'manual_entry'] %}active{% endif %}" href="#" data-bs-toggle="dropdown">File</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('upload') }}">Upload CSV</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('manual_entry') }}">Enter Data Manually</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'methods' %}active{% endif %}" href="{{ url_for('methods') }}">Stat Methods</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'results' %}active{% endif %}" href="{{ url_for('results') }}">Results</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if request.endpoint.startswith('download') %}active{% endif %}" href="#" data-bs-toggle="dropdown">Download</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('download_pdf') }}">PDF Report</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('download_csv') }}">CSV</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('download_excel') }}">Excel</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
   </nav>
+
+  <!-- Main Page Container -->
   <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     {% block content %}{% endblock %}
   </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
