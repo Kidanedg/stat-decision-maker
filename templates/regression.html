@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3>Simple Linear Regression</h3>
+<form method="post" enctype="multipart/form-data">
+  <input type="file" name="file" required><br><br>
+  X Column: <input type="text" name="xcol" required><br>
+  Y Column: <input type="text" name="ycol" required><br>
+  <button type="submit" class="btn btn-primary mt-2">Run Regression</button>
+</form>
+
+{% if result %}
+<hr>
+<ul>
+  <li>Slope: {{ result.slope }}</li>
+  <li>Intercept: {{ result.intercept }}</li>
+  <li>R-squared: {{ result.r_squared }}</li>
+</ul>
+{% elif result and result.error %}
+<p style="color:red;">❌ {{ result.error }}</p>
+{% endif %}
+{% endblock %}
