@@ -35,6 +35,9 @@ def index():
                 df = pd.read_csv(filepath)
                 columns = df.columns.tolist()
                 print("✅ Columns detected:", columns)
+                print("🔍 Method:", method)
+                print("🔍 Col1:", col1)
+                print("🔍 Col2:", col2)
 
                 if method and col1 in df.columns:
                     if method == "t-test" and col2 in df.columns:
@@ -95,10 +98,10 @@ def index():
                         return render_template("index.html", columns=columns, result=result)
 
                     else:
-                        result = {"error": "Invalid method or columns selected."}
+                        result = {"error": "Please select valid method and columns."}
                         return render_template("index.html", columns=columns, result=result)
 
-                    # Plot for most methods
+                    # Plot for supported methods
                     if method in ["t-test", "anova", "regression", "correlation", "chi-square"]:
                         plt.figure(figsize=(6, 4))
                         if method == "regression":
@@ -128,13 +131,16 @@ def index():
                         }
 
                 else:
-                    result = {"error": "Missing method or column selection."}
+                    result = {"error": "Please select valid method and columns."}
+                    return render_template("index.html", columns=columns, result=result)
 
             except Exception as e:
                 result = {"error": f"Error reading CSV: {str(e)}"}
+                return render_template("index.html", columns=columns, result=result)
 
         else:
             result = {"error": "Please upload a valid CSV file."}
+            return render_template("index.html", columns=[], result=result)
 
     return render_template("index.html", columns=columns, result=result)
 
