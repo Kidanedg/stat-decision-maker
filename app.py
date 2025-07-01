@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -34,8 +34,12 @@ def index():
             try:
                 df = pd.read_csv(filepath)
                 columns = df.columns.tolist()
+                print("✅ Columns detected:", columns)
 
                 if method and col1 in df.columns:
+                    plot_path = os.path.join(STATIC_FOLDER, "plot.png")
+                    result = {}
+
                     if method == "t-test" and col2 in df.columns:
                         groups = df[col1].dropna().unique()
                         if len(groups) < 2:
@@ -84,7 +88,6 @@ def index():
                         plt.title(f"Time Series Plot: {col1}")
                         plt.xlabel("Index")
                         plt.ylabel(col1)
-                        plot_path = os.path.join(STATIC_FOLDER, "plot.png")
                         plt.savefig(plot_path)
                         plt.close()
                         result = {
@@ -97,7 +100,7 @@ def index():
                         result = {"error": "Invalid method or columns selected."}
                         return render_template("index.html", columns=columns, result=result)
 
-                    # Plot for most methods
+                    # Plot (except for timeseries)
                     if method in ["t-test", "anova", "regression", "correlation", "chi-square"]:
                         plt.figure(figsize=(6, 4))
                         if method == "regression":
@@ -114,7 +117,6 @@ def index():
                         plt.title(plot_title)
                         plt.xlabel(col1)
                         plt.ylabel(col2)
-                        plot_path = os.path.join(STATIC_FOLDER, "plot.png")
                         plt.savefig(plot_path)
                         plt.close()
 
@@ -126,14 +128,24 @@ def index():
                             "plot": "plot.png"
                         }
 
+                        # Save CSV of results
+                        csv_path = os.path.join(STATIC_FOLDER, "result.csv")
+                        pd.DataFrame([{
+                            "Test": plot_title,
+                            "Statistic": round(t_stat, 3),
+                            "p-Value": round(p_val, 4),
+                            "Decision": decision
+                        }]).to_csv(csv_path, index=False)
+                        result["csv"] = "result.csv"
+
                 else:
                     result = {"error": "Missing method or column selection."}
 
             except Exception as e:
-                result = {"error": f"Error reading CSV: {str(e)}"}
+                result = {"error": f"❌ Error reading CSV: {str(e)}"}
 
         else:
-            result = {"error": "Please upload a valid CSV file."}
+            result = {"error": "❌ Please upload a valid CSV file."}
 
     return render_template("index.html", columns=columns, result=result)
 
