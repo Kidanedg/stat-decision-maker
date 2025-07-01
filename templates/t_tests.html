@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3>Independent Two-Sample t-Test</h3>
+<form method="post" enctype="multipart/form-data">
+  <input type="file" name="file" required><br><br>
+  Test Column (Group): <input type="text" name="col1" required><br>
+  Value Column: <input type="text" name="col2" required><br>
+  <input type="hidden" name="test_type" value="independent">
+  <button type="submit" class="btn btn-success mt-2">Run t-Test</button>
+</form>
+
+{% if result %}
+<hr>
+<h4>Result:</h4>
+<ul>
+  <li>Test: {{ result.test }}</li>
+  <li>Statistic: {{ result.statistic }}</li>
+  <li>p-Value: {{ result.p_value }}</li>
+  <li>Decision: <strong>{{ result.decision }}</strong></li>
+</ul>
+{% elif result and result.error %}
+<p style="color: red;">❌ {{ result.error }}</p>
+{% endif %}
+{% endblock %}
