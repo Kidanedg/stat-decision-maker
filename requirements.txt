@@ -1,14 +1,11 @@
-Flask>=2.3
-Flask-Login>=0.6
-Flask-Babel>=3.1.0
-Flask-SQLAlchemy>=3.0
-Werkzeug>=2.3
-pandas>=2.0
-scipy>=1.11
-numpy>=1.25
-matplotlib>=3.8
-gunicorn>=21.2
-weasyprint>=60.2  # Optional, for PDF export
-plotly>=5.18      # Optional, for interactive plots
-
-
+Flask==3.1.1
+Flask-Login==0.6.3
+Flask-Babel==4.0.0
+Flask-SQLAlchemy==3.1.1
+plotly==6.2.0
+pandas==2.3.0
+numpy==2.3.1
+scipy==1.16.0
+matplotlib==3.10.3
+gunicorn==23.0.0
+weasyprint==65.1
