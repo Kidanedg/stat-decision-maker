@@ -1,13 +1,53 @@
 {% extends "layout.html" %}
 {% block content %}
-<h3>Upload CSV for Summary</h3>
-<form method="post" enctype="multipart/form-data">
-  <input type="file" name="file" required>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
-{% if result %}
-<hr>
-<h4>Summary Statistics</h4>
-{{ result | safe }}
+<h2>📈 Data Summary</h2>
+
+{% if df is defined %}
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered table-sm table-hover">
+      <thead class="table-light">
+        <tr>
+          {% for col in df.columns %}
+            <th>{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in df.head(20).values %}
+        <tr>
+          {% for val in row %}
+            <td>{{ val }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="text-muted">Showing first 20 rows</p>
+  </div>
+
+  <h4>📊 Descriptive Statistics</h4>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Statistic</th>
+        {% for col in stats.columns %}
+          <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for idx, row in stats.iterrows() %}
+      <tr>
+        <th>{{ idx }}</th>
+        {% for val in row %}
+          <td>{{ '%.2f'|format(val) }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% else %}
+  <div class="alert alert-warning">No data loaded yet. Please upload a file or enter data manually.</div>
 {% endif %}
 {% endblock %}
