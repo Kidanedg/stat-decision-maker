@@ -1,25 +1,36 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <h2>Analysis Results</h2>
+<h2>📋 Analysis Results</h2>
 
-  {% if result %}
-    {% if result.error %}
-      <div class="alert alert-danger">{{ result.error }}</div>
-    {% else %}
-      <div class="card mb-3">
-        <div class="card-body">
-          <h4>{{ result.test }}</h4>
-          {% if result.statistic %}<p><strong>Statistic:</strong> {{ result.statistic }}</p>{% endif %}
-          {% if result.p_value %}<p><strong>p-Value:</strong> {{ result.p_value }}</p>{% endif %}
-          {% if result.decision %}<p><strong>Decision:</strong> {{ result.decision }}</p>{% endif %}
+{% if result %}
+  <div class="card mt-4 shadow">
+    <div class="card-body">
+      <h5 class="card-title">{{ result.test }}</h5>
+      <p><strong>Statistic:</strong> {{ result.statistic }}</p>
+      <p><strong>p-Value:</strong> {{ result.p_value }}</p>
+      <p><strong>Decision:</strong> {{ result.decision }}</p>
+
+      {% if result.interpretation %}
+        <div class="mt-3 alert alert-info">
+          <strong>Interpretation:</strong> {{ result.interpretation }}
         </div>
-      </div>
+      {% endif %}
 
       {% if result.plot %}
-        <img src="{{ url_for('static', filename=result.plot) }}" class="img-fluid" alt="Plot">
+        <h6 class="mt-4">📊 Plot:</h6>
+        <img src="{{ url_for('static', filename=result.plot) }}" alt="Result Plot" class="img-fluid">
       {% endif %}
-    {% endif %}
-  {% else %}
-    <p>No results yet. Run an analysis from the <a href="{{ url_for('methods') }}">methods page</a>.</p>
-  {% endif %}
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{{ url_for('download_pdf') }}" class="btn btn-outline-danger">📄 Download as PDF</a>
+    <a href="{{ url_for('download_csv') }}" class="btn btn-outline-primary">📥 Download CSV</a>
+    <a href="{{ url_for('download_excel') }}" class="btn btn-outline-success">📊 Download Excel</a>
+  </div>
+{% else %}
+  <div class="alert alert-warning mt-4">
+    No analysis has been run yet. Please upload a dataset and select a method from the menu.
+  </div>
+{% endif %}
 {% endblock %}
