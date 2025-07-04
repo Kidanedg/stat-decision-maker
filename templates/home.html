@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>Welcome to the Statistical Decision Maker</h2>
-<p>This tool helps you analyze CSV datasets using standard statistical methods like t-tests, ANOVA, regression, correlation, and more.</p>
-<p>Use the menu above to upload your file and choose an analysis method.</p>
+<div class="text-center mt-5">
+  <h1 class="display-5">📊 Statistical Decision Maker</h1>
+  <p class="lead">Easily upload, analyze, and visualize your data.</p>
+  <p>Use the menu above to:</p>
+  <ul class="list-unstyled">
+    <li>✅ Upload CSV files or enter data manually</li>
+    <li>🧪 Run tests like t-test, ANOVA, regression, chi-square</li>
+    <li>📈 View summaries and download PDF/CSV reports</li>
+  </ul>
+  <a href="{{ url_for('upload') }}" class="btn btn-primary mt-3">Get Started</a>
+</div>
 {% endblock %}
