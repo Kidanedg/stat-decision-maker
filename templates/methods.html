@@ -1,40 +1,14 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <h2>Select Statistical Method</h2>
-  <p class="text-muted">Choose an analysis method to apply on the dataset.</p>
-
-  <form method="POST">
-    <div class="mb-3">
-      <label for="method" class="form-label">Analysis Method:</label>
-      <select class="form-select" name="method" required>
-        <option value="">-- Select Method --</option>
-        <option value="t-test">Two-Sample t-Test</option>
-        <option value="anova">ANOVA</option>
-        <option value="regression">Linear Regression</option>
-        <option value="correlation">Correlation</option>
-        <option value="chi-square">Chi-Square Test</option>
-        <option value="timeseries">Time Series Plot</option>
-        <option value="kruskal">Kruskal-Wallis Test</option>
-        <option value="wilcoxon">Wilcoxon Signed-Rank Test</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="col1" class="form-label">Select Column 1:</label>
-      <select class="form-select" name="col1" required>
-        {% for col in columns %}
-          <option value="{{ col }}">{{ col }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="col2" class="form-label">Select Column 2 (if needed):</label>
-      <select class="form-select" name="col2">
-        <option value="">-- None --</option>
-        {% for col in columns %}
-          <option value="{{ col }}">{{ col }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit" class="btn btn-success">Run Analysis</button>
-  </form>
+<h2>🧪 Available Statistical Methods</h2>
+<ul class="list-group list-group-flush mt-4">
+  <li class="list-group-item">📌 Descriptive Statistics (mean, median, std, etc.)</li>
+  <li class="list-group-item">📊 One-sample & Two-sample <strong>t-tests</strong></li>
+  <li class="list-group-item">🧮 One-sample & Two-sample <strong>z-tests</strong></li>
+  <li class="list-group-item">📉 <strong>Simple</strong> & <strong>Multiple Linear Regression</strong></li>
+  <li class="list-group-item">📋 <strong>One-way</strong> & <strong>Two-way ANOVA</strong></li>
+  <li class="list-group-item">🔁 <strong>Chi-square tests</strong> (Independence, Homogeneity, Goodness of Fit)</li>
+  <li class="list-group-item">🧾 <strong>Correlation tests</strong> (Pearson, Spearman)</li>
+  <li class="list-group-item">📐 <strong>Non-parametric tests</strong> (Mann–Whitney U, Wilcoxon, Kruskal-Wallis – coming soon)</li>
+</ul>
 {% endblock %}
