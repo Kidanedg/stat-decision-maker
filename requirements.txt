@@ -10,3 +10,10 @@ matplotlib>=3.8
 gunicorn>=21.2
 weasyprint>=60.2  # Optional, for PDF export
 plotly>=5.18      # Optional, for interactive plots
+libffi-dev
+libpango1.0-0
+libpangocairo-1.0-0
+libcairo2
+libjpeg-dev
+libssl-dev
+
