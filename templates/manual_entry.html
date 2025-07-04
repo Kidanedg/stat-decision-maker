@@ -1,28 +1,18 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <h2>Manual Data Entry</h2>
-  <form method="POST">
-    <p class="text-muted">Enter your data in grid form below:</p>
-    <div class="table-responsive">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            {% for header in headers %}
-              <th><input type="text" name="headers" value="{{ header }}" class="form-control"></th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in rows %}
-            <tr>
-              {% for cell in row %}
-                <td><input type="text" name="cell" value="{{ cell }}" class="form-control"></td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit Data</button>
-  </form>
+<h2>✍️ Enter Data Manually</h2>
+<p>You can enter your dataset below. Separate values with commas. Use one row per observation.</p>
+
+<form method="POST" class="mt-4">
+  <div class="mb-3">
+    <label for="manual_data" class="form-label">Paste your data:</label>
+    <textarea name="manual_data" class="form-control" rows="10" placeholder="e.g.&#10;Age,Height,Group&#10;23,170,A&#10;25,180,B" required>{{ manual_data|default('') }}</textarea>
+    <div class="form-text">Headers required in the first row. Supported format: CSV.</div>
+  </div>
+  <button type="submit" class="btn btn-success">📊 Submit Data</button>
+</form>
+
+{% if error %}
+<div class="alert alert-danger mt-4">{{ error }}</div>
+{% endif %}
 {% endblock %}
