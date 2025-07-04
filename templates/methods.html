@@ -1,14 +1,43 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>🧪 Available Statistical Methods</h2>
-<ul class="list-group list-group-flush mt-4">
-  <li class="list-group-item">📌 Descriptive Statistics (mean, median, std, etc.)</li>
-  <li class="list-group-item">📊 One-sample & Two-sample <strong>t-tests</strong></li>
-  <li class="list-group-item">🧮 One-sample & Two-sample <strong>z-tests</strong></li>
-  <li class="list-group-item">📉 <strong>Simple</strong> & <strong>Multiple Linear Regression</strong></li>
-  <li class="list-group-item">📋 <strong>One-way</strong> & <strong>Two-way ANOVA</strong></li>
-  <li class="list-group-item">🔁 <strong>Chi-square tests</strong> (Independence, Homogeneity, Goodness of Fit)</li>
-  <li class="list-group-item">🧾 <strong>Correlation tests</strong> (Pearson, Spearman)</li>
-  <li class="list-group-item">📐 <strong>Non-parametric tests</strong> (Mann–Whitney U, Wilcoxon, Kruskal-Wallis – coming soon)</li>
-</ul>
+<div class="container">
+  <h3>📊 Select Statistical Method</h3>
+  <form method="post" class="mt-4">
+    <div class="mb-3">
+      <label for="method" class="form-label">Choose Method:</label>
+      <select name="method" id="method" class="form-select" required>
+        <option value="">-- Select --</option>
+        <option value="t-test">t-Test (2 groups)</option>
+        <option value="anova">One-Way ANOVA</option>
+        <option value="regression">Linear Regression</option>
+        <option value="correlation">Correlation</option>
+        <option value="chi-square">Chi-Square Test</option>
+        <option value="timeseries">Time Series Plot</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="col1" class="form-label">Column 1 (Grouping or X):</label>
+      <select name="col1" id="col1" class="form-select" required>
+        <option value="">-- Select Column --</option>
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="col2" class="form-label">Column 2 (Y or Value):</label>
+      <select name="col2" id="col2" class="form-select">
+        <option value="">-- Select Column --</option>
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">Only needed for tests that use two variables.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Analyze</button>
+  </form>
+</div>
 {% endblock %}
