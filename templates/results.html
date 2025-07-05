@@ -1,43 +1,7 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="container">
-  <h3>📊 Analysis Result</h3>
-
-  {% if result %}
-    {% if result.error %}
-      <div class="alert alert-danger mt-3">{{ result.error }}</div>
-    {% else %}
-      <div class="card mt-4">
-        <div class="card-header">
-          {{ result.test }}
-        </div>
-        <div class="card-body">
-          <p><strong>Statistic:</strong> {{ result.statistic }}</p>
-          <p><strong>p-Value:</strong> {{ result.p_value }}</p>
-          <p><strong>Decision:</strong> {{ result.decision }}</p>
-
-          {% if result.interpretation %}
-            <p><strong>Interpretation:</strong> {{ result.interpretation }}</p>
-          {% endif %}
-
-          {% if result.plot %}
-            <div class="mt-4">
-              <h5>📉 Visualization</h5>
-              <img src="{{ url_for('static', filename=result.plot) }}" class="img-fluid" alt="Result Plot">
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <div class="mt-4">
-        <h5>📥 Export Result</h5>
-        <a href="{{ url_for('download_pdf') }}" class="btn btn-outline-danger btn-sm">Download PDF</a>
-        <a href="{{ url_for('download_csv') }}" class="btn btn-outline-primary btn-sm">Download CSV</a>
-        <a href="{{ url_for('download_excel') }}" class="btn btn-outline-success btn-sm">Download Excel</a>
-      </div>
-    {% endif %}
-  {% else %}
-    <div class="alert alert-warning mt-4">No analysis result found. Please perform an analysis first.</div>
-  {% endif %}
+<h2>Results</h2>
+<div>
+  {{ plot_html | safe }}
 </div>
 {% endblock %}
