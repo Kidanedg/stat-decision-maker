@@ -1,12 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Available Statistical Methods</h2>
-<ul>
-  <li>Descriptive Statistics (mean, median, std)</li>
-  <li>t-Test</li>
-  <li>ANOVA</li>
-  <li>Linear Regression</li>
-  <li>Correlation</li>
-</ul>
-<p>More methods will be added soon!</p>
+<h2>Select Statistical Method</h2>
+<form method="post">
+  <div class="form-group">
+    <label for="method">Choose a method:</label>
+    <select class="form-select" name="method" id="method">
+      <optgroup label="Descriptive Statistics">
+        <option value="descriptive">Descriptive Statistics</option>
+      </optgroup>
+      <optgroup label="t-Tests">
+        <option value="t1">One-Sample t-Test</option>
+        <option value="t2">Two-Sample t-Test</option>
+      </optgroup>
+      <optgroup label="ANOVA">
+        <option value="anova1">One-Way ANOVA</option>
+        <option value="anova2">Two-Way ANOVA</option>
+      </optgroup>
+      <optgroup label="Regression">
+        <option value="reg_simple">Simple Linear Regression</option>
+        <option value="reg_multiple">Multiple Linear Regression</option>
+      </optgroup>
+      <optgroup label="Correlation">
+        <option value="correlation">Pearson Correlation</option>
+      </optgroup>
+      <optgroup label="Chi-Square">
+        <option value="chi_indep">Test of Independence</option>
+        <option value="chi_goodness">Goodness of Fit</option>
+        <option value="chi_homogeneity">Test of Homogeneity</option>
+      </optgroup>
+      <optgroup label="Time Series">
+        <option value="tsa">Time Series Plot</option>
+      </optgroup>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary mt-3">Analyze</button>
+</form>
 {% endblock %}
