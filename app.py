@@ -1,46 +1,37 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
-from flask_babel import Babel, gettext
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
+from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
-import numpy as np
 import os
-import plotly.express as px
-from io import BytesIO
-import matplotlib.pyplot as plt
 import uuid
+import plotly.express as px
+import plotly.io as pio
+import matplotlib.pyplot as plt
 
+# App config
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.secret_key = 'your_secret_key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Extensions
+# Init
+db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-babel = Babel(app)
-db = SQLAlchemy(app)
 
-# Dummy User Model
+# Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-
-with app.app_context():
-    db.create_all()
+    username = db.Column(db.String(64), unique=True)
+    password = db.Column(db.String(64))
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Set locale
-@babel.localeselector
-def get_locale():
-    return request.accept_languages.best_match(['en', 'am'])
-
-# ========== ROUTES ==========
+# Routes
 
 @app.route("/")
 def home():
@@ -52,121 +43,118 @@ def upload():
     if request.method == "POST":
         file = request.files.get("file")
         if file and file.filename.endswith(".csv"):
-            path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            filename = f"{uuid.uuid4()}_{file.filename}"
+            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(path)
-            session['csv_file'] = path
-            flash("File uploaded successfully.")
+            session["uploaded_file"] = path
+            flash("File uploaded successfully!", "success")
             return redirect(url_for("summary"))
         else:
-            flash("Invalid file. Please upload a CSV.")
+            flash("Invalid file. Please upload a CSV.", "danger")
     return render_template("upload.html")
 
 @app.route("/manual-entry", methods=["GET", "POST"])
 @login_required
 def manual_entry():
     if request.method == "POST":
-        rows = int(request.form.get("rows", 5))
-        cols = int(request.form.get("cols", 2))
-        data = []
-        for i in range(rows):
-            row = []
-            for j in range(cols):
-                val = request.form.get(f"cell-{i}-{j}", "")
-                row.append(val)
-            data.append(row)
-        df = pd.DataFrame(data)
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], f"manual_{uuid.uuid4().hex[:6]}.csv")
-        df.to_csv(file_path, index=False, header=False)
-        session['csv_file'] = file_path
-        flash("Manual data submitted.")
-        return redirect(url_for("summary"))
+        raw_data = request.form["raw_data"]
+        try:
+            from io import StringIO
+            df = pd.read_csv(StringIO(raw_data))
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4()}_manual.csv")
+            df.to_csv(temp_path, index=False)
+            session["uploaded_file"] = temp_path
+            flash("Manual data saved successfully!", "success")
+            return redirect(url_for("summary"))
+        except Exception as e:
+            flash(f"Error parsing manual input: {str(e)}", "danger")
     return render_template("manual_entry.html")
 
 @app.route("/summary")
 @login_required
 def summary():
-    file = session.get('csv_file')
-    if not file or not os.path.exists(file):
-        flash("No dataset found.")
+    file_path = session.get("uploaded_file")
+    if not file_path or not os.path.exists(file_path):
+        flash("No file found. Please upload or enter data.", "warning")
         return redirect(url_for("upload"))
-    df = pd.read_csv(file)
-    desc = df.describe(include='all').fillna("")
-    return render_template("summary.html", tables=[desc.to_html(classes='table table-bordered', index=True)])
+    df = pd.read_csv(file_path)
+    summary_stats = df.describe(include='all').to_html(classes="table table-bordered")
+    return render_template("summary.html", table=summary_stats, columns=df.columns.tolist())
 
 @app.route("/methods", methods=["GET", "POST"])
 @login_required
 def methods():
-    file = session.get('csv_file')
-    if not file or not os.path.exists(file):
-        flash("No data loaded.")
-        return redirect(url_for("upload"))
-    df = pd.read_csv(file)
+    file_path = session.get("uploaded_file")
+    result = None
     plot_div = None
-    if request.method == "POST":
-        col1 = request.form.get("col1")
-        col2 = request.form.get("col2")
-        if col1 and col2 and col1 in df.columns and col2 in df.columns:
-            fig = px.scatter(df, x=col1, y=col2, title=f"{col1} vs {col2}")
-            plot_div = fig.to_html(full_html=False)
-    return render_template("methods.html", columns=df.columns.tolist(), plot_div=plot_div)
+    columns = []
+
+    if file_path and os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+        columns = df.columns.tolist()
+
+        if request.method == "POST":
+            method = request.form.get("method")
+            col1 = request.form.get("col1")
+            col2 = request.form.get("col2")
+
+            try:
+                if method == "correlation":
+                    corr_val = df[col1].corr(df[col2])
+                    fig = px.scatter(df, x=col1, y=col2, title=f"Correlation = {corr_val:.3f}")
+                    plot_div = pio.to_html(fig, full_html=False)
+                    result = f"Correlation between {col1} and {col2}: {corr_val:.3f}"
+                elif method == "summary":
+                    result = df[[col1]].describe().to_html(classes="table table-bordered")
+                else:
+                    result = "Method not yet implemented."
+            except Exception as e:
+                result = f"Error: {str(e)}"
+    else:
+        flash("Upload or enter data first.", "warning")
+        return redirect(url_for("upload"))
+
+    return render_template("methods.html", columns=columns, result=result, plot_div=plot_div)
 
 @app.route("/results")
 @login_required
 def results():
     return render_template("results.html")
 
-@app.route("/download-pdf")
-@login_required
-def download_pdf():
-    return "📄 PDF download will be implemented soon"
-
 @app.route("/download-csv")
 @login_required
 def download_csv():
-    file = session.get('csv_file')
-    if file and os.path.exists(file):
-        return send_file(file, as_attachment=True)
-    flash("No file found.")
-    return redirect(url_for("upload"))
-
-@app.route("/download-excel")
-@login_required
-def download_excel():
-    file = session.get('csv_file')
-    if file and os.path.exists(file):
-        df = pd.read_csv(file)
-        excel_io = BytesIO()
-        df.to_excel(excel_io, index=False)
-        excel_io.seek(0)
-        return send_file(excel_io, download_name="data.xlsx", as_attachment=True)
-    flash("No data found.")
-    return redirect(url_for("upload"))
-
-# ========== AUTH ROUTES ==========
+    file_path = session.get("uploaded_file")
+    if file_path and os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    flash("No file to download.", "danger")
+    return redirect(url_for("home"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-        if user and user.password == request.form["password"]:
+        uname = request.form["username"]
+        pwd = request.form["password"]
+        user = User.query.filter_by(username=uname, password=pwd).first()
+        if user:
             login_user(user)
-            flash("Logged in successfully.")
+            flash("Login successful!", "success")
             return redirect(url_for("home"))
         else:
-            flash("Invalid credentials.")
+            flash("Invalid credentials.", "danger")
     return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        if User.query.filter_by(username=username).first():
-            flash("User already exists.")
+        uname = request.form["username"]
+        pwd = request.form["password"]
+        if User.query.filter_by(username=uname).first():
+            flash("Username already exists.", "danger")
         else:
-            db.session.add(User(username=username, password=password))
+            db.session.add(User(username=uname, password=pwd))
             db.session.commit()
-            flash("Registration successful.")
+            flash("User registered. You can log in now.", "success")
             return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -174,13 +162,12 @@ def register():
 @login_required
 def logout():
     logout_user()
-    flash("Logged out.")
+    flash("Logged out.", "info")
     return redirect(url_for("login"))
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
+# Create DB if not exists
+with app.app_context():
+    db.create_all()
 
-# ========== RUN ==========
 if __name__ == "__main__":
     app.run(debug=True)
