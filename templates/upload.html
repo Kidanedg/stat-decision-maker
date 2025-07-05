@@ -1,24 +1,11 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="row">
-  <div class="col-md-8 offset-md-2">
-    <h2 class="mb-4">📁 Upload CSV File</h2>
-    
-    <form method="POST" enctype="multipart/form-data" class="border p-4 shadow-sm bg-light rounded">
-      <div class="mb-3">
-        <label for="file" class="form-label">Choose CSV file:</label>
-        <input class="form-control" type="file" name="file" id="file" accept=".csv" required>
-        <div class="form-text">Only CSV files are supported (max 2MB).</div>
-      </div>
-
-      <button type="submit" class="btn btn-primary">📤 Upload</button>
-    </form>
-
-    <hr>
-
-    <div class="alert alert-warning mt-4">
-      <strong>Note:</strong> After uploading, you’ll be redirected to view a summary of your dataset.
-    </div>
+<h2>Upload CSV File</h2>
+<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="file" class="form-label">Choose CSV File</label>
+    <input type="file" name="file" class="form-control" id="file" required>
   </div>
-</div>
+  <button type="submit" class="btn btn-success">Upload</button>
+</form>
 {% endblock %}
