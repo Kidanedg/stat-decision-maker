@@ -36,7 +36,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Set locale
-@babel.locale_selector
+@babel.localeselector
 def get_locale():
     return request.accept_languages.best_match(['en', 'am'])
 
