@@ -1,18 +1,11 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="container">
-  <h3>📝 Manual Data Entry</h3>
-  {% if message %}
-    <div class="alert alert-danger">{{ message }}</div>
-  {% endif %}
-
-  <form method="post">
-    <div class="mb-3">
-      <label for="data" class="form-label">Enter CSV Data:</label>
-      <textarea name="data" id="data" rows="8" class="form-control" placeholder="e.g.&#10;Group,Value&#10;A,5&#10;B,7" required></textarea>
-      <div class="form-text">Header required. Use commas to separate fields.</div>
-    </div>
-    <button type="submit" class="btn btn-success">Submit Data</button>
-  </form>
-</div>
+<h2>Enter Data Manually</h2>
+<p>Enter your CSV data below (including headers).</p>
+<form method="POST">
+  <div class="mb-3">
+    <textarea name="data" class="form-control" rows="10" placeholder="name,age,score\nAlice,24,90\nBob,30,80"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Save Data</button>
+</form>
 {% endblock %}
