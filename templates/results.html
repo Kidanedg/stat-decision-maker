@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Results</h2>
-<div>
-  {{ plot_html | safe }}
-</div>
+<h2>Analysis Results</h2>
+
+{% if tables %}
+  <h4>Uploaded Data:</h4>
+  {{ tables[0]|safe }}
+{% endif %}
+
+{% if graph_html %}
+  <h4>Basic Plot:</h4>
+  <div>{{ graph_html | safe }}</div>
+{% endif %}
 {% endblock %}
