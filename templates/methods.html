@@ -1,24 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Select Statistical Method</h3>
-<form>
+<h3>Select Method & Variables</h3>
+<form method="POST">
     <div class="mb-3">
-        <label for="method" class="form-label">Choose a method:</label>
+        <label for="method" class="form-label">Analysis Method:</label>
         <select class="form-select" id="method" name="method">
-            <option>Descriptive Statistics</option>
-            <option>One-Sample t-Test</option>
-            <option>Two-Sample t-Test</option>
-            <option>One-Way ANOVA</option>
-            <option>Two-Way ANOVA</option>
-            <option>Simple Linear Regression</option>
-            <option>Multiple Linear Regression</option>
-            <option>Correlation</option>
-            <option>Chi-Square Goodness of Fit</option>
-            <option>Chi-Square Test of Independence</option>
-            <option>Chi-Square Test of Homogeneity</option>
-            <option>Time Series Analysis</option>
+            {% for key, name in methods.items() %}
+            <option value="{{ key }}">{{ name }}</option>
+            {% endfor %}
         </select>
     </div>
-    <button class="btn btn-success">Submit</button>
+    <div class="mb-3">
+        <label for="var1">Primary Variable:</label>
+        <select class="form-select" name="var1">
+            {% for col in columns %}<option>{{ col }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="var2">Secondary Variable / Group:</label>
+        <select class="form-select" name="var2">
+            <option value="">-- Optional --</option>
+            {% for col in columns %}<option>{{ col }}</option>{% endfor %}
+        </select>
+    </div>
+    <button class="btn btn-success">Run Analysis</button>
 </form>
 {% endblock %}
