@@ -1,18 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Results: {{ method }}</h2>
-
-{% if results_html %}
-  <div class="my-3">
-    {{ results_html | safe }}
-  </div>
-{% endif %}
-
-{% if plot_html %}
-  <div class="my-3">
-    {{ plot_html | safe }}
-  </div>
-{% endif %}
-
-<a href="{{ url_for('methods') }}" class="btn btn-secondary mt-3">Choose another method</a>
+<h2>Results</h2>
+{{ table|safe }}
+<hr>
+{{ graph_html|safe }}
 {% endblock %}
