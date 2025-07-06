@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Graph/Plot Generator</h3>
+<form method="POST">
+    <div class="row mb-3">
+        <div class="col">
+            <label for="x_var" class="form-label">X Variable</label>
+            <select name="x_var" class="form-select" required>
+                {% for col in columns %}
+                <option value="{{ col }}">{{ col }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label for="y_var" class="form-label">Y Variable</label>
+            <select name="y_var" class="form-select" required>
+                {% for col in columns %}
+                <option value="{{ col }}">{{ col }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Plot</button>
+</form>
+
+{% if fig_html %}
+<hr>
+<h4>Interactive Plot</h4>
+<div>{{ fig_html|safe }}</div>
+{% endif %}
+{% endblock %}
