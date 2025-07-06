@@ -1,13 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Statistical Methods</h2>
-<ul>
-  <li>Descriptive Statistics</li>
-  <li>One/Two Sample t-Test</li>
-  <li>One-way/Two-way ANOVA</li>
-  <li>Simple/Multiple Linear Regression</li>
-  <li>Correlation</li>
-  <li>Chi-Square Tests</li>
-  <li>Time Series Analysis</li>
-</ul>
+<h3>Select Statistical Method</h3>
+<form>
+    <div class="mb-3">
+        <label for="method" class="form-label">Choose a method:</label>
+        <select class="form-select" id="method" name="method">
+            <option>Descriptive Statistics</option>
+            <option>One-Sample t-Test</option>
+            <option>Two-Sample t-Test</option>
+            <option>One-Way ANOVA</option>
+            <option>Two-Way ANOVA</option>
+            <option>Simple Linear Regression</option>
+            <option>Multiple Linear Regression</option>
+            <option>Correlation</option>
+            <option>Chi-Square Goodness of Fit</option>
+            <option>Chi-Square Test of Independence</option>
+            <option>Chi-Square Test of Homogeneity</option>
+            <option>Time Series Analysis</option>
+        </select>
+    </div>
+    <button class="btn btn-success">Submit</button>
+</form>
 {% endblock %}
