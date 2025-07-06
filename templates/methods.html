@@ -2,27 +2,27 @@
 {% block content %}
 <h3>Select Method & Variables</h3>
 <form method="POST">
-    <div class="mb-3">
-        <label for="method" class="form-label">Analysis Method:</label>
-        <select class="form-select" id="method" name="method">
-            {% for key, name in methods.items() %}
-            <option value="{{ key }}">{{ name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="var1">Primary Variable:</label>
-        <select class="form-select" name="var1">
-            {% for col in columns %}<option>{{ col }}</option>{% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="var2">Secondary Variable / Group:</label>
-        <select class="form-select" name="var2">
-            <option value="">-- Optional --</option>
-            {% for col in columns %}<option>{{ col }}</option>{% endfor %}
-        </select>
-    </div>
-    <button class="btn btn-success">Run Analysis</button>
+  <div class="mb-3">
+    <label class="form-label">Method:</label>
+    <select class="form-select" name="method">
+      {% for k, v in methods.items() %}
+      <option value="{{ k }}">{{ v }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Variable 1:</label>
+    <select class="form-select" name="var1">
+      {% for c in columns %}<option>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Variable 2 (if needed):</label>
+    <select class="form-select" name="var2">
+      <option value="">-- Optional --</option>
+      {% for c in columns %}<option>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-success">Run Analysis</button>
 </form>
 {% endblock %}
