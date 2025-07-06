@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Results</h3>
-<p>Statistical results will be displayed here based on your selected method.</p>
+<h3>Results: {{ method_name }}</h3>
+{{ result_html|safe }}
+{% if plot_html %}
+<hr>
+{{ plot_html|safe }}
+{% endif %}
+<a href="{{ url_for('methods') }}" class="btn btn-secondary mt-3">Back to Methods</a>
 {% endblock %}
