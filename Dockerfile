@@ -1,22 +1,20 @@
-# Use Python 3.10 base image
+# Base image
 FROM python:3.10-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Set working directory
+# Set work directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copy all project files
+# Copy project files into container
 COPY . .
 
-# Expose port (Render uses 10000 internally but exposes 0.0.0.0)
-EXPOSE 10000
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Start the app using gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:10000", "app:app"]
+# Create uploads folder (if used for session/file uploads)
+RUN mkdir -p uploads
+
+# Expose port (optional for docs, not needed by Render)
+EXPOSE 8000
+
+# Start with gunicorn
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:app"]
