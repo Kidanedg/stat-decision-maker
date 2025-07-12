@@ -1,17 +1,22 @@
-# Use official Python 3.10 image
+# Use Python 3.10 base image
 FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-# Copy all project files to the container
-COPY . /app
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy all project files
+COPY . .
 
-# Expose the port Render uses
+# Expose port (Render uses 10000 internally but exposes 0.0.0.0)
 EXPOSE 10000
 
-# Start the Flask app with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
+# Start the app using gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:10000", "app:app"]
