@@ -1,28 +1,45 @@
-{% extends "base.html" %}
-{% block content %}
-<h3>Select Method & Variables</h3>
-<form method="POST">
-  <div class="mb-3">
-    <label class="form-label">Method:</label>
-    <select class="form-select" name="method">
-      {% for k, v in methods.items() %}
-      <option value="{{ k }}">{{ v }}</option>
-      {% endfor %}
-    </select>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Method</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>Select Statistical Method</h2>
+    <form method="POST">
+      <div class="mb-3">
+        <label for="method" class="form-label">Method</label>
+        <select class="form-select" name="method" id="method" required>
+          {% for key, label in methods.items() %}
+            <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="var1" class="form-label">Variable 1</label>
+        <select class="form-select" name="var1">
+          <option value="">(Optional)</option>
+          {% for col in columns %}
+            <option value="{{ col }}">{{ col }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="var2" class="form-label">Variable 2</label>
+        <select class="form-select" name="var2">
+          <option value="">(Optional)</option>
+          {% for col in columns %}
+            <option value="{{ col }}">{{ col }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Run Analysis</button>
+    </form>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Variable 1:</label>
-    <select class="form-select" name="var1">
-      {% for c in columns %}<option>{{ c }}</option>{% endfor %}
-    </select>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Variable 2 (if needed):</label>
-    <select class="form-select" name="var2">
-      <option value="">-- Optional --</option>
-      {% for c in columns %}<option>{{ c }}</option>{% endfor %}
-    </select>
-  </div>
-  <button class="btn btn-success">Run Analysis</button>
-</form>
-{% endblock %}
+</body>
+</html>
