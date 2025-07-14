@@ -1,10 +1,32 @@
-{% extends "base.html" %}
-{% block content %}
-<h3>Results: {{ method_name }}</h3>
-{{ result_html|safe }}
-{% if plot_html %}
-<hr>
-{{ plot_html|safe }}
-{% endif %}
-<a class="btn btn-secondary mt-3" href="{{ url_for('methods') }}">Back</a>
-{% endblock %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Results - {{ method_name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .table-wrapper {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>{{ method_name }}</h2>
+    <div class="table-wrapper mt-4">
+      {{ result_html|safe }}
+    </div>
+    
+    {% if plot_html %}
+      <div class="mt-4">
+        {{ plot_html|safe }}
+      </div>
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('methods') }}" class="btn btn-secondary">Back</a>
+      <a href="{{ url_for('upload') }}" class="btn btn-outline-secondary">Upload New Dataset</a>
+    </div>
+  </div>
+</body>
+</html>
