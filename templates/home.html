@@ -1,5 +1,15 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Welcome to Stat Decision Maker</h2>
-<p>Upload your CSV, choose a statistical method, and view results and plots.</p>
-{% endblock %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistical App - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container mt-5 text-center">
+    <h1 class="display-5">Welcome to the Statistical App</h1>
+    <p class="lead">Upload your dataset and run common statistical analyses.</p>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg mt-3">Get Started</a>
+  </div>
+</body>
+</html>
